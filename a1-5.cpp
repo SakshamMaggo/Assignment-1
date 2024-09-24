@@ -23,12 +23,22 @@ class Stack {
 
         // Function to add an element to the stack
         void push(int x) {
-            //Write your code here
+            if (isFull()) {
+                // Cannot push onto a full stack
+                cout << "Invalid Input";
+                exit(0);
+            }
+            arr[++top] = x;
         }
 
         // Function to pop the top element
         int pop() {
-            //Write your code here
+            if (isEmpty()) {
+                // Cannot pop from an empty stack
+                cout << "Invalid Input";
+                exit(0);
+            }
+            return arr[top--];
         }
 
         // Function to display the elements of the stack
@@ -47,12 +57,12 @@ class Stack {
     
         // Function to check if the stack is full
         bool isFull() const {
-            //Write your code here
+            return top == capacity - 1;
         }
 
         // Function to check if the stack is empty
         bool isEmpty() const {
-            //Write your code here
+            return top == -1;
         }
 
 };
@@ -73,14 +83,35 @@ void displayTowers() {
     cout << "\n";
 }
 
-void rearrangeDisks(int n, Stack& A, Stack& B, Stack& C, char from, char to, char aux) {
-    //Write your code here
+// Recursive function to rearrange disks following Tower of Hanoi rules
+void rearrangeDisks(int n, Stack& source, Stack& destination, Stack& auxiliary, char from, char to, char aux) {
+    if (n == 0)
+        return;
+
+    // Move n-1 disks from source to auxiliary
+    rearrangeDisks(n - 1, source, auxiliary, destination, from, aux, to);
+
+    // Move the nth disk from source to destination
+    int disk = source.pop();
+    destination.push(disk);
+
+    // Print the move and display the current state of the towers
+    cout << "Move disk " << disk << " from " << from << " to " << to << endl;
+    displayTowers();
+
+    // Move the n-1 disks from auxiliary to destination
+    rearrangeDisks(n - 1, auxiliary, destination, source, aux, to, from);
 }
 
 int main() { // The main function has been defined for you, do not edit anything here.
     int n;
-    cout << "Enter the number of disks: ";
     cin >> n;
+
+    // Input Validation: Check if the input is a positive integer
+    if (n < 0) {
+        cout << "Invalid Input";
+        return 0;
+    }
 
     A = new Stack(n);
     B = new Stack(n);
@@ -92,7 +123,7 @@ int main() { // The main function has been defined for you, do not edit anything
 
     displayTowers();
 
-    rearrangeDisks(n, *A, *B, *C, 'A', 'C', 'B');
+    rearrangeDisks(n, *A, *C, *B, 'A', 'C', 'B');
 
     delete A;
     delete B;
