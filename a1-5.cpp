@@ -6,7 +6,7 @@ using namespace std;
 class Stack {
     
     int* arr;
-    int top;
+    int topIndex;
     int capacity;
 
     public:
@@ -14,7 +14,7 @@ class Stack {
         Stack(int size) { // The constructor has been defined for you
             arr = new int[size];
             capacity = size;
-            top = -1;
+            topIndex = -1;
         }
 
         ~Stack() {
@@ -23,36 +23,50 @@ class Stack {
 
         // Function to add an element to the stack
         void push(int x) {
-            //Write your code here
+            if (isFull()) {
+                // Stack overflow: cannot push more disks
+                cout << "Invalid move: cannot place disk " << x << " on peg.\n";
+                exit(1);
+            }
+            if (!isEmpty() && x > arr[topIndex]) {
+                // Cannot place a larger disk on a smaller one
+                cout << "Invalid move: cannot place disk " << x << " on top of disk " << arr[topIndex] << "\n";
+                exit(1);
+            }
+            arr[++topIndex] = x;
         }
 
         // Function to pop the top element
         int pop() {
-            //Write your code here
+            if (isEmpty()) {
+                // Stack underflow: no disks to pop
+                cout << "Invalid move: cannot pop from empty peg.\n";
+                exit(1);
+            }
+            return arr[topIndex--];
         }
 
         // Function to display the elements of the stack
         void display() const {
             if (isEmpty()) {
-                cout << "Empty";
+                cout << "Empty ";
             } else {
-                for (int i = 0; i <= top; i++) {
+                for (int i = 0; i <= topIndex; i++) {
                     cout << arr[i] << " ";
                 }
             }
-            cout << endl;
         }
 
     private:
-    
+        
         // Function to check if the stack is full
         bool isFull() const {
-            //Write your code here
+            return topIndex == capacity - 1;
         }
 
         // Function to check if the stack is empty
         bool isEmpty() const {
-            //Write your code here
+            return topIndex == -1;
         }
 
 };
@@ -73,8 +87,38 @@ void displayTowers() {
     cout << "\n";
 }
 
+// Recursive function to rearrange disks following Tower of Hanoi rules
 void rearrangeDisks(int n, Stack& A, Stack& B, Stack& C, char from, char to, char aux) {
-    //Write your code here
+    if(n == 0)
+        return;
+
+    // Move n-1 disks from 'from' peg to 'aux' peg using 'to' as auxiliary
+    rearrangeDisks(n-1, A, B, C, from, aux, to);
+
+    // Move the nth disk from 'from' peg to 'to' peg
+    Stack* sourcePeg;
+    Stack* destPeg;
+
+    // Determine the source peg based on the 'from' character
+    if(from == 'A') sourcePeg = &A;
+    else if(from == 'B') sourcePeg = &B;
+    else sourcePeg = &C;
+
+    // Determine the destination peg based on the 'to' character
+    if(to == 'A') destPeg = &A;
+    else if(to == 'B') destPeg = &B;
+    else destPeg = &C;
+
+    // Pop the top disk from the source peg and push it onto the destination peg
+    int disk = sourcePeg->pop();
+    destPeg->push(disk);
+
+    // Print the move and display the current state of the towers
+    cout << "Move disk " << disk << " from " << from << " to " << to << " ";
+    displayTowers();
+
+    // Move the n-1 disks from 'aux' peg to 'to' peg using 'from' as auxiliary
+    rearrangeDisks(n-1, A, B, C, aux, to, from);
 }
 
 int main() { // The main function has been defined for you, do not edit anything here.
@@ -82,18 +126,28 @@ int main() { // The main function has been defined for you, do not edit anything
     cout << "Enter the number of disks: ";
     cin >> n;
 
+    // Input Validation: Check if the input is a positive integer
+    if(cin.fail() || n < 1){
+        cout << "Invalid Input";
+        return 0;
+    }
+
+    // Initialize the pegs with the specified number of disks on Peg A
     A = new Stack(n);
     B = new Stack(n);
     C = new Stack(n);
 
-    for (int i = n; i >= 1; i--) {
+    for(int i = n; i >= 1; i--){
         A->push(i);
     }
 
+    // Display the initial state of the towers
     displayTowers();
 
+    // Solve the Tower of Hanoi problem
     rearrangeDisks(n, *A, *B, *C, 'A', 'C', 'B');
 
+    // Clean up dynamically allocated memory
     delete A;
     delete B;
     delete C;
